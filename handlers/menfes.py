@@ -3,9 +3,9 @@ from pyrogram.types import Message
 from config import CHANNEL_ID, MODERATION, LOG_CHAT_ID
 from database import load_json, save_json
 
-    cooldown_users = set()
+cooldown_users = set()
 
-    @app.on_message(filters.command("menfes") & filters.private)
+@app.on_message(filters.command("menfes") & filters.private)
     async def menfes_handler(_, message: Message):
         user_id = message.from_user.id
         user = message.from_user
