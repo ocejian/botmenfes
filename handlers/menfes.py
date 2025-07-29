@@ -36,10 +36,10 @@ def init(app):
         if any(word.lower() in text.lower() for word in blacklist):
             return await message.reply("⚠️ Menfes mengandung kata yang dilarang.")
 
-        menfes_text = f"💌 #Menfes:\n\n{text}" if text else "💌 #Pesan Menfes"
+        menfes_text = f"💌 #Menfes :\n\n{text}" if text else "💌 #Menfes"
 
         cooldown_users.add(user_id)
-        asyncio.get_event_loop().call_later(2, lambda: cooldown_users.remove(user_id))
+        asyncio.get_event_loop().call_later(5, lambda: cooldown_users.remove(user_id))
 
         # Validasi peer ID (channel) untuk cegah crash
         try:
