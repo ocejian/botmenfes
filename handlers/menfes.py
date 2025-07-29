@@ -19,36 +19,36 @@ def init(app):
         if user_id in cooldown_users:
             return await message.reply("⌛ Tunggu beberapa saat sebelum kirim lagi.")
 
-        if not message.reply_to_message and len(message.command) < 2:
-            return await message.reply(
-                "Kirim /menfes diikuti curhatan, atau reply ke media dengan /menfes <isi>"
-            )
-
-        # Ambil teks dari perintah atau caption reply
+        # Ambil teks dari command atau caption media jika reply
         text = ""
-        if message.reply_to_message and len(message.command) >= 2:
+        if len(message.command) >= 2:
             text = message.text.split(None, 1)[1]
-        elif len(message.command) >= 2:
-            text = message.text.split(None, 1)[1]
+        elif message.reply_to_message and message.reply_to_message.caption:
+            text = message.reply_to_message.caption
 
-        # Anti badword
+        if not text:
+            return await message.reply("⚠️ Tidak ada isi menfes. Kirim /menfes <isi> atau reply media.")
+
+        # Cek kata blacklist
         blacklist = load_json("blacklist.json")
         if any(word.lower() in text.lower() for word in blacklist):
             return await message.reply("⚠️ Menfes mengandung kata yang dilarang.")
 
-        menfes_text = f"💌 #Menfes :\n\n{text}" if text else "💌 #Menfes"
+        # Format menfes
+        menfes_text = f"💌 #Menfes :\n\n{text}"
 
+        # Tambahkan cooldown user
         cooldown_users.add(user_id)
         asyncio.get_event_loop().call_later(5, lambda: cooldown_users.remove(user_id))
 
-        # Validasi peer ID (channel) untuk cegah crash
+        # Validasi channel
         try:
             await app.get_chat(CHANNEL_ID)
-        except Exception as e:
-            return await message.reply("❌ Gagal mengirim: bot belum join channel atau ID salah.")
+        except Exception:
+            return await message.reply("❌ Bot belum join channel atau ID salah.")
 
         try:
-            # Jika reply ke media
+            # Jika reply ke media, salin media ke channel
             if message.reply_to_message and any([
                 message.reply_to_message.photo,
                 message.reply_to_message.video,
@@ -57,39 +57,35 @@ def init(app):
                 message.reply_to_message.voice,
                 message.reply_to_message.sticker,
             ]):
-                media_msg = message.reply_to_message
-
-                await media_msg.copy(
+                await message.reply_to_message.copy(
                     CHANNEL_ID,
                     caption=("📝 Review menfes:\n\n" if MODERATION else "") + menfes_text,
-                    parse_mode=ParseMode.HTML,
-                )
-                await message.reply(
-                    "✅ Menfes kamu dikirim untuk ditinjau admin." if MODERATION else
-                    "✅ Menfes kamu berhasil dikirim!"
+                    parse_mode=ParseMode.HTML
                 )
             else:
-                # Kirim teks biasa
+                # Jika hanya teks
                 await app.send_message(
                     CHANNEL_ID,
                     ("📝 Review menfes:\n\n" if MODERATION else "") + menfes_text,
                     parse_mode=ParseMode.HTML
                 )
-                await message.reply(
-                    "✅ Menfes kamu dikirim untuk ditinjau admin." if MODERATION else
-                    "✅ Menfes kamu berhasil dikirim!"
-                )
+
+            await message.reply(
+                "✅ Menfes kamu dikirim untuk ditinjau admin." if MODERATION else
+                "✅ Menfes kamu berhasil dikirim!"
+            )
+
         except Exception as e:
             print(f"[ERROR]: {e}")
             return await message.reply("❌ Terjadi kesalahan saat mengirim menfes.")
 
-        # Logging ke grup log
+        # Kirim ke log grup
         log_text = (
             f"📥 <b>Log Menfes Masuk</b>\n"
             f"👤 <b>Nama:</b> {user.first_name}\n"
             f"🔗 <b>Username:</b> @{user.username if user.username else '-'}\n"
             f"🆔 <b>ID:</b> <code>{user.id}</code>\n"
-            f"📝 <b>Isi:</b> {text or '(hanya media)'}"
+            f"📝 <b>Isi:</b> {text}"
         )
         try:
             await app.send_message(LOG_CHAT_ID, log_text, parse_mode=ParseMode.HTML)
