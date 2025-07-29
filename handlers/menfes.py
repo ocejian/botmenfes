@@ -31,7 +31,7 @@ def init(app):
         menfes_text = f"💌 Pesan anonim:\n\n{text}"
 
         cooldown_users.add(user_id)
-        app.loop.call_later(60, lambda: cooldown_users.remove(user_id))
+        app.loop.call_later(2, lambda: cooldown_users.remove(user_id))
 
         if MODERATION:
             await app.send_message(CHANNEL_ID, f"📝 Review menfes:\n\n{menfes_text}")
