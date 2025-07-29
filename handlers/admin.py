@@ -1,7 +1,8 @@
-from pyrogram import filters
-from pyrogram.types import Message
-from config import OWNER_ID
-from database import load_json, save_json
+def init(app):
+    from pyrogram import filters
+    from pyrogram.types import Message 
+    from config import OWNER_ID
+    from database import load_json, save_json
 
 @app.on_message(filters.command("block") & filters.user(OWNER_ID))
     async def block_user(_, m: Message):
