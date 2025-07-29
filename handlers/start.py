@@ -20,8 +20,8 @@ def init(app):
                 photo="https://files.catbox.moe/jh9dok.jpg",  # ganti sesuai kebutuhan (bisa video juga pakai reply_video)
                 caption=f"👋 Halo {mention},\nSelamat datang di bot Menfes",
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("💌 Kirim Menfes", switch_inline_query_current_chat="contoh kirim menfes nyet /menfes kelra ganteng banget bejir")],
-                    [InlineKeyboardButton("👤 Support", url="https://t.me/ofckelrapillas")]
+                    [InlineKeyboardButton("💌 Kirim Menfes", "contoh kirim menfes nyet /menfes kelra ganteng banget bejir")],
+                    [InlineKeyboardButton("👤 Channel", url="https://t.me/ofckelrapillas")]
                 ])
             )
 
