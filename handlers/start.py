@@ -4,7 +4,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
 
-from config import LOG_CHANNEL  # jika butuh logging
+from config import LOG_CHAT_ID  # jika butuh logging
 
 # Fungsi init untuk di-load di bot.py
 def init(app):
@@ -26,7 +26,7 @@ def init(app):
             )
 
             # Opsional: Logging ke grup
-            if LOG_CHANNEL:
+            if LOG_CHAT_ID:
                 await app.send_message(
                     LOG_CHANNEL,
                     f"#START\n\n{user_info}"
