@@ -28,7 +28,7 @@ def init(app):
             # Opsional: Logging ke grup
             if LOG_CHAT_ID:
                 await app.send_message(
-                    LOG_CHANNEL,
+                    LOG_CHAT_ID,
                     f"#START\n\n{user_info}"
                 )
 
