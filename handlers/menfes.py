@@ -1,9 +1,8 @@
-from pyrogram import filters
-from pyrogram.types import Message
-from config import CHANNEL_ID, MODERATION, LOG_CHAT_ID
-from database import load_json, save_json
-from main import app  # pastikan import app juga
-from pyrogram.enums import ParseMode
+def init(app): 
+    from pyrogram import filters
+    from pyrogram.types import Message 
+    from config import CHANNEL_ID, MODERATION, LOG_CHAT_ID 
+    from database import load_json, save_json
 
 cooldown_users = set()
 
@@ -27,6 +26,8 @@ async def menfes_handler(_, message: Message):
     blacklist = load_json("blacklist.json")
     if any(word.lower() in text.lower() for word in blacklist):
         return await message.reply("⚠️ Menfes mengandung kata yang dilarang.")
+
+    from pyrogram.enums import ParseMode
 
     menfes_text = f"💌 Pesan anonim:\n\n{text}"
 
