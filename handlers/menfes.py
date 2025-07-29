@@ -30,8 +30,6 @@ def init(app):
             text = message.text.split(None, 1)[1]
         elif len(message.command) >= 2:
             text = message.text.split(None, 1)[1]
-        else:
-            text = ""
 
         # Anti badword
         blacklist = load_json("blacklist.json")
@@ -43,39 +41,47 @@ def init(app):
         cooldown_users.add(user_id)
         asyncio.get_event_loop().call_later(2, lambda: cooldown_users.remove(user_id))
 
-        # Jika reply ke media
-        if message.reply_to_message and (
-            message.reply_to_message.photo
-            or message.reply_to_message.video
-            or message.reply_to_message.document
-            or message.reply_to_message.audio
-            or message.reply_to_message.voice
-            or message.reply_to_message.sticker
-        ):
-            media_msg = message.reply_to_message
+        # Validasi peer ID (channel) untuk cegah crash
+        try:
+            await app.get_chat(CHANNEL_ID)
+        except Exception as e:
+            return await message.reply("❌ Gagal mengirim: bot belum join channel atau ID salah.")
 
-            if MODERATION:
+        try:
+            # Jika reply ke media
+            if message.reply_to_message and any([
+                message.reply_to_message.photo,
+                message.reply_to_message.video,
+                message.reply_to_message.document,
+                message.reply_to_message.audio,
+                message.reply_to_message.voice,
+                message.reply_to_message.sticker,
+            ]):
+                media_msg = message.reply_to_message
+
                 await media_msg.copy(
                     CHANNEL_ID,
-                    caption=f"📝 Review menfes:\n\n{menfes_text}",
+                    caption=("📝 Review menfes:\n\n" if MODERATION else "") + menfes_text,
                     parse_mode=ParseMode.HTML,
                 )
-                await message.reply("✅ Menfes kamu dikirim untuk ditinjau admin.")
+                await message.reply(
+                    "✅ Menfes kamu dikirim untuk ditinjau admin." if MODERATION else
+                    "✅ Menfes kamu berhasil dikirim!"
+                )
             else:
-                await media_msg.copy(
+                # Kirim teks biasa
+                await app.send_message(
                     CHANNEL_ID,
-                    caption=menfes_text,
-                    parse_mode=ParseMode.HTML,
+                    ("📝 Review menfes:\n\n" if MODERATION else "") + menfes_text,
+                    parse_mode=ParseMode.HTML
                 )
-                await message.reply("✅ Menfes kamu berhasil dikirim!")
-        else:
-            # Hanya teks saja
-            if MODERATION:
-                await app.send_message(CHANNEL_ID, f"📝 Review menfes:\n\n{menfes_text}")
-                await message.reply("✅ Menfes kamu dikirim untuk ditinjau admin.")
-            else:
-                await app.send_message(CHANNEL_ID, menfes_text, parse_mode=ParseMode.HTML)
-                await message.reply("✅ Menfes kamu berhasil dikirim!")
+                await message.reply(
+                    "✅ Menfes kamu dikirim untuk ditinjau admin." if MODERATION else
+                    "✅ Menfes kamu berhasil dikirim!"
+                )
+        except Exception as e:
+            print(f"[ERROR]: {e}")
+            return await message.reply("❌ Terjadi kesalahan saat mengirim menfes.")
 
         # Logging ke grup log
         log_text = (
@@ -85,4 +91,7 @@ def init(app):
             f"🆔 <b>ID:</b> <code>{user.id}</code>\n"
             f"📝 <b>Isi:</b> {text or '(hanya media)'}"
         )
-        await app.send_message(LOG_CHAT_ID, log_text, parse_mode=ParseMode.HTML)
+        try:
+            await app.send_message(LOG_CHAT_ID, log_text, parse_mode=ParseMode.HTML)
+        except Exception as e:
+            print(f"[LOG ERROR]: {e}")
