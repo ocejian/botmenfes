@@ -1,8 +1,7 @@
-from pyrogram import filters
-from pyrogram.types import Message
-from config import OWNER_ID
-import os
-import asyncio
+def init(app):
+    from pyrogram import filters
+    from pyrogram.types import Message 
+    from config import OWNER_ID import os import asyncio
 
 @app.on_message(filters.command("updatebot") & filters.user(OWNER_ID))
     async def update_bot(_, m: Message):
